@@ -6,9 +6,9 @@ Music Context 是 AstrBot 音乐上下文增强插件，将用户分享的歌曲
 
 ## 为什么需要 Music Context
 
-音乐链接和歌曲名称无法提供完整的歌曲内容。Music Context 补充歌曲信息、可获取的歌词与翻译，让 LLM 能围绕用户当前分享的音乐进行交流，同时保留原有角色设定与对话流程。
+普通音乐分享通常只包含歌曲名称、链接等基础信息。Music Context 补充歌曲信息、可获取的歌词与翻译，作为 AI 对话的上下文，供模型参考用户正在讨论的音乐内容。
 
-可选 Context Processor 提供歌曲文本的摘要、主题等辅助解释。这些解释可能出错，不代表完整的音频理解；歌曲内容也不代表分享者的情绪或意图。插件不提供音乐播放、下载或推荐。
+插件不提供音乐播放、下载或推荐功能。
 
 ## 功能特点
 
@@ -23,15 +23,15 @@ Music Context 是 AstrBot 音乐上下文增强插件，将用户分享的歌曲
 
 ## 界面展示
 
-以下为现有界面截图；图中的版本与配置反映采集时状态。Context 图为真实空状态，详细来源见[截图说明](pages/dashboard/assets/readme/README.md)。
+以下为插件 WebUI 界面截图，具体功能说明见图片标注。
 
 **Dashboard · 运行概览**
 
-![Dashboard 真实运行概览](pages/dashboard/assets/readme/dashboard.jpg)
+![Dashboard 运行概览](pages/dashboard/assets/readme/dashboard.jpg)
 
 **Music Context · 上下文记录**
 
-![Music Context 真实空状态](pages/dashboard/assets/readme/context.jpg)
+![Music Context 上下文记录](pages/dashboard/assets/readme/context.jpg)
 
 **配置页面 · 历史与缓存**
 
@@ -39,7 +39,8 @@ Music Context 是 AstrBot 音乐上下文增强插件，将用户分享的歌曲
 
 ## 安装方式
 
-需要 AstrBot `>=4.24.0,<5`，建议使用已完成原生验证的 AstrBot 4.28.2 / Python 3.12 环境。插件使用宿主与 Python 标准库，无额外运行依赖或前端构建步骤；完整宿主版本矩阵尚未验证。
+- AstrBot：`>=4.24.0,<5`（与 `metadata.yaml` 一致）。
+- Python：跟随 AstrBot 官方要求。
 
 ### AstrBot 插件安装
 
@@ -57,13 +58,13 @@ https://github.com/QAZcyang/astrbot-plugin-music-context
 
 ### 手动安装
 
-在 AstrBot 实际工作目录的 `data/plugins/` 下执行，固定取得正式版本：
+在 AstrBot 实际工作目录的 `data/plugins/` 下执行，取得仓库默认分支：
 
 ```sh
-git clone --branch v1.0.0 --depth 1 https://github.com/QAZcyang/astrbot-plugin-music-context.git astrbot_plugin_music_context
+git clone --depth 1 https://github.com/QAZcyang/astrbot-plugin-music-context.git astrbot_plugin_music_context
 ```
 
-保留完整的 `main.py`、`metadata.yaml`、`_conf_schema.json`、`src/`、`pages/dashboard/`、`LICENSE`、`NOTICE.md` 和图标 notices。已有安装请先备份插件、配置与数据。
+保留完整插件目录，包括 `main.py`、`metadata.yaml`、`_conf_schema.json`、`src/`、`pages/dashboard/`、`logo.png`、`assets/icon.png`、`LICENSE`、`NOTICE.md` 和图标 notices。已有安装请先备份插件、配置与数据。
 
 安装后在 AstrBot 中加载/重载并检查日志，在目标会话的插件列表中启用 Music Context。正常分享支持的单曲链接，并确保会话会触发 LLM 请求；无需音乐命令。管理页入口为插件详情的 **Pages/页面 → dashboard**。更多使用边界见[使用与开发指南](USER_GUIDE.md)。
 
