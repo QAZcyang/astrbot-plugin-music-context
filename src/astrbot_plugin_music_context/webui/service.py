@@ -18,7 +18,7 @@ class DashboardService:
         registry: ProviderRegistry,
         cache: CacheManager | None,
         *,
-        version: str = "1.0.0",
+        version: str = "1.0.1",
     ):
         self.state = state
         self.registry = registry
