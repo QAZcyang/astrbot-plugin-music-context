@@ -1,6 +1,6 @@
 name: astrbot_plugin_music_context
-display_name: Music Context
-desc: Provide music metadata and lyrics as temporary conversation context.
+display_name: 听懂这首歌 (Music Context)
+desc: 解析音乐分享内容，获取歌曲信息与歌词，让 AI 能理解并参与关于歌曲的交流。
 version: 1.0.0
 author: QAZcyang
 repo: https://github.com/QAZcyang/astrbot-plugin-music-context

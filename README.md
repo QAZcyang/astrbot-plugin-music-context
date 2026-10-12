@@ -1,12 +1,12 @@
-# Music Context
+# 听懂这首歌 (Music Context)
 
 **版本：v1.0.0 正式版**
 
-Music Context 是 AstrBot 音乐上下文增强插件，将用户分享的歌曲信息与歌词整理为结构化上下文，供原有对话模型使用。
+听懂这首歌 (Music Context) 是 AstrBot 音乐上下文插件。解析音乐分享内容，获取歌曲信息与歌词，让 AI 能理解并参与关于歌曲的交流。
 
-## 为什么需要 Music Context
+## 为什么需要听懂这首歌 (Music Context)
 
-普通音乐分享通常只包含歌曲名称、链接等基础信息。Music Context 补充歌曲信息、可获取的歌词与翻译，作为 AI 对话的上下文，供模型参考用户正在讨论的音乐内容。
+普通音乐分享通常只包含歌曲名称、链接等基础信息。听懂这首歌 (Music Context) 补充歌曲信息、可获取的歌词与翻译，作为 AI 对话的上下文，供模型参考用户正在讨论的音乐内容。
 
 插件不提供音乐播放、下载或推荐功能。
 
@@ -66,7 +66,7 @@ git clone --depth 1 https://github.com/QAZcyang/astrbot-plugin-music-context.git
 
 保留完整插件目录，包括 `main.py`、`metadata.yaml`、`_conf_schema.json`、`src/`、`pages/dashboard/`、`logo.png`、`assets/icon.png`、`LICENSE`、`NOTICE.md` 和图标 notices。已有安装请先备份插件、配置与数据。
 
-安装后在 AstrBot 中加载/重载并检查日志，在目标会话的插件列表中启用 Music Context。正常分享支持的单曲链接，并确保会话会触发 LLM 请求；无需音乐命令。管理页入口为插件详情的 **Pages/页面 → dashboard**。更多使用边界见[使用与开发指南](USER_GUIDE.md)。
+安装后在 AstrBot 中加载/重载并检查日志，在目标会话的插件列表中启用听懂这首歌 (Music Context)。正常分享支持的单曲链接，并确保会话会触发 LLM 请求；无需音乐命令。管理页入口为插件详情的 **Pages/页面 → dashboard**。更多使用边界见[使用与开发指南](USER_GUIDE.md)。
 
 确认 Dashboard 显示 `v1.0.0`，分享网易云单曲链接后查看新增 Music Context；有音乐关联的模型回调时可查看 LLM 回复。记录表示 Hook 观察，最终消息送达仍以客户端为准。版本内容与限制见 [v1.0.0 Release 说明](https://github.com/QAZcyang/astrbot-plugin-music-context/releases/tag/v1.0.0)。
 
@@ -95,7 +95,7 @@ Processor 默认关闭；开启后会调用选定模型，可能产生费用。�
 
 如果同时使用其他音乐卡片解析插件，可能有多个插件处理同一消息。
 如出现重复回复或重复解析，可以关闭此选项，并交由其他插件处理。
-关闭后 Music Context 跳过 JSON/XML 卡片，不为卡片补充文本或生成音乐 Context；
+关闭后听懂这首歌 (Music Context) 跳过 JSON/XML 卡片，不为卡片补充文本或生成音乐 Context；
 普通文本音乐链接仍正常处理，AstrBot 原有聊天流程继续。该选项不调整事件优先级，
 也不自动处理多插件冲突。Dashboard 保存后对新请求生效，重启后保持保存值。
 
@@ -167,7 +167,7 @@ QQ 聊天中的网易云分享卡片不等于 QQ 音乐数据源支持。卡片�
 
 特别感谢 [jjf1126/astrbot_plugin_ncm_get](https://github.com/jjf1126/astrbot_plugin_ncm_get)，为项目提供早期 AstrBot 音乐插件方向与音乐信息获取探索的参考。
 
-在这一方向的启发下，Music Context 独立扩展了 Provider 抽象、Context 生成、临时 LLM 上下文注入、WebUI 管理和历史持久化。这里是思路参考与社区学习的致谢，不表示复制了参考项目代码；具体来源与授权另行追踪。
+在这一方向的启发下，听懂这首歌 (Music Context) 独立扩展了 Provider 抽象、Context 生成、临时 LLM 上下文注入、WebUI 管理和历史持久化。这里是思路参考与社区学习的致谢，不表示复制了参考项目代码；具体来源与授权另行追踪。
 
 也感谢 [AstrBot](https://github.com/AstrBotDevs/AstrBot) 维护者与生态社区提供插件接口和交流基础。完整参考范围见[来源清单](docs/REFERENCE.md)。
 
