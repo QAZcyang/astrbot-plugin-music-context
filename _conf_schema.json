@@ -1,0 +1,130 @@
+{
+  "enable_card_parser": {
+    "type": "bool",
+    "default": true,
+    "description": "卡片消息解析",
+    "hint": "启用后，插件会主动解析音乐卡片消息。若同时使用其他音乐卡片解析插件并出现重复回复或重复解析，可关闭此项；普通文本音乐链接不受影响。关闭时在解码前跳过 JSON/XML 卡片，也不为纯卡片补充文本；不调整宿主唤醒或事件优先级。"
+  },
+  "enable_cache": {
+    "type": "bool",
+    "default": true,
+    "description": "启用音乐缓存",
+    "hint": "歌曲与原始歌词缓存减少重复检索；有效 Context 缓存跳过重复构建，匹配的生成缓存跳过辅助模型调用。身份包含平台与歌曲 ID，避免跨平台混用。关闭只停止处理链路读写缓存，已有缓存仍可在管理页查看或清除；历史独立保存。"
+  },
+  "cache_ttl": {
+    "type": "int",
+    "default": 604800,
+    "description": "缓存有效时间（秒）",
+    "hint": "1–31536000 秒；默认七天，仅影响新写入记录。读取不续期，派生 Context 的有效期不超过已有歌曲/歌词证据；历史记录不使用此 TTL。",
+    "minimum": 1,
+    "maximum": 31536000
+  },
+  "max_cache_items": {
+    "type": "int",
+    "default": 256,
+    "description": "每类缓存最大条数",
+    "hint": "1–4096；歌曲、歌词、Context 各自受此上限约束。事实与生成 Context 变体共用 Context 上限；超限淘汰最早写入项，每类缓存另有 8 MiB 文件上限，不适用于历史。",
+    "minimum": 1,
+    "maximum": 4096
+  },
+  "show_full_lyrics_preview": {
+    "type": "bool",
+    "default": false,
+    "description": "歌词缓存预览展示全部歌词",
+    "hint": "默认关闭：预览最多 400 字符。开启后按需展示清洗后的全部歌词（去除时间标签和连续重复行）。仅影响 WebUI 预览，不修改缓存原文，也不改变 Context 或模型输入长度限制。"
+  },
+  "enable_context_injection": {
+    "type": "bool",
+    "default": true,
+    "description": "启用 Music Context 注入",
+    "hint": "默认开启：在宿主准备 LLM 请求时临时补充音乐数据。关闭后不注入音乐 Context，也不新增本次注入关联的历史；原有聊天继续，已有缓存与历史保留。"
+  },
+  "max_context_length": {
+    "type": "int",
+    "default": 8000,
+    "description": "Music Context 最大字符数",
+    "hint": "512–32000，包含数据提示前缀；不是精确 token 数。",
+    "minimum": 512,
+    "maximum": 32000
+  },
+  "debug_mode": {
+    "type": "bool",
+    "default": false,
+    "description": "Debug 模式",
+    "hint": "默认关闭：页面显示结构化业务信息。开启后展示原始歌词、Provider 响应、完整 Context、Processor 输入输出及 LLM 注入文本，仅在内存保留最近 20 次注入；关闭后清除快照。日志仍只记录固定阶段，不打印原文。"
+  },
+  "history_enable": {
+    "type": "bool",
+    "default": true,
+    "description": "保存音乐 Context 与回复历史",
+    "hint": "默认开启：历史保存到插件数据目录，重启后仍可查看。关闭后停止新增，已有历史保留。模型回复按回调原文完整保存（可能包含引用歌词、链接或个人信息）；不额外复制歌词和完整 Debug 数据。用户消息脱敏后最多 2000 字符。历史关联本次 Context、来源与回复，用于 WebUI 展示和追踪；没有缓存 TTL，也不能用于生成 Context。"
+  },
+  "max_history_items": {
+    "type": "int",
+    "default": 50,
+    "description": "每类历史最大保存数量",
+    "hint": "1–100；Context 与回复分别受限，超过上限删除最旧记录。按记录条数控制保留量，不截断回复原文；历史没有音乐缓存的文件字节上限。",
+    "minimum": 1,
+    "maximum": 100
+  },
+  "store_llm_history": {
+    "type": "bool",
+    "default": true,
+    "description": "保存近期音乐请求的 LLM 回复",
+    "hint": "兼容已有回复开关：须同时开启历史保存。已有配置值保持不变；关闭只停止新增回复，已有记录保留。仅记录实际注入音乐数据的请求，记录不证明客户端送达。"
+  },
+  "llm_history_limit": {
+    "type": "int",
+    "default": 50,
+    "description": "最多保存的回复条数",
+    "hint": "兼容已有回复数量配置：实际回复上限取此值与每类历史最大数量的较小值。",
+    "minimum": 1,
+    "maximum": 100
+  },
+  "enable_context_processor": {
+    "type": "bool",
+    "default": false,
+    "description": "启用独立音乐预处理",
+    "hint": "开启后，将使用指定的小模型对音乐上下文进行优化处理，提取歌曲风格、主题、情绪等辅助信息，帮助主对话模型更好理解音乐内容。\n原始歌词不会被修改，预处理失败时会自动回退到原始数据。",
+    "obvious_hint": true
+  },
+  "processor_model": {
+    "type": "string",
+    "default": "",
+    "description": "预处理模型",
+    "hint": "选择 AstrBot 已配置的文本模型；未选择或模型不存在时跳过预处理。",
+    "_special": "select_provider",
+    "max_length": 200
+  },
+  "context_processor": {
+    "type": "object",
+    "description": "预处理生成参数",
+    "hint": "仅在启用独立音乐预处理且选定可用模型时参与生成；不改变主对话模型的参数。各子项使用下方默认值。",
+    "items": {
+      "temperature": {
+        "type": "float",
+        "default": 0.2,
+        "description": "生成随机性（Temperature）",
+        "hint": "默认 0.2，范围 0–2；传给所选 AstrBot 模型的生成参数，实际支持以宿主 Provider 为准。",
+        "minimum": 0,
+        "maximum": 2
+      },
+      "max_tokens": {
+        "type": "int",
+        "default": 1000,
+        "description": "最大输出 tokens",
+        "hint": "默认 1000，范围 128–4096；限制辅助模型输出，不改变主对话回复或 Music Context 的字符预算。",
+        "minimum": 128,
+        "maximum": 4096
+      },
+      "timeout": {
+        "type": "int",
+        "default": 30,
+        "description": "总等待时间（秒）",
+        "hint": "默认 30 秒，范围 1–60；限制本次预处理的总等待时间，超时回退到事实 Context，普通聊天继续。",
+        "minimum": 1,
+        "maximum": 60
+      }
+    }
+  }
+}

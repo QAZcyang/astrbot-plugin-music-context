@@ -1,0 +1,7 @@
+name: astrbot_plugin_music_context
+display_name: Music Context
+desc: Provide music metadata and lyrics as temporary conversation context.
+version: 1.0.0
+author: QAZcyang
+repo: https://github.com/QAZcyang/astrbot-plugin-music-context
+astrbot_version: ">=4.24.0,<5"
