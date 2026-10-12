@@ -1,7 +1,7 @@
 name: astrbot_plugin_music_context
 display_name: 听懂这首歌 (Music Context)
 desc: 解析音乐分享内容，获取歌曲信息与歌词，让 AI 理解并参与关于歌曲的交流。
-version: 1.0.1
+version: 1.0.2
 author: QAZcyang
 repo: https://github.com/QAZcyang/astrbot-plugin-music-context
 astrbot_version: ">=4.24.0,<5"

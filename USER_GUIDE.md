@@ -1,6 +1,6 @@
 # Music Context 使用与开发指南
 
-Music Context v1.0.1 支持网易云单曲链接、App 短链及已知 JSON/XML 音乐卡片。QQ Music 与其他音乐数据源只有扩展接口，尚未实现。
+Music Context v1.0.2 支持网易云单曲链接、App 短链及已知 JSON/XML 音乐卡片。QQ Music 与其他音乐数据源只有扩展接口，尚未实现。
 
 ## 宿主与消息边界
 

@@ -3,11 +3,12 @@
 import asyncio
 import hashlib
 import json
-import logging
 import math
 from collections.abc import Callable, Mapping
 from dataclasses import asdict, replace
+from typing import Any
 
+from astrbot.api import logger as astrbot_logger
 from astrbot.api.event import AstrMessageEvent
 from astrbot.api.provider import ProviderRequest
 from astrbot.core.agent.message import TextPart
@@ -65,7 +66,7 @@ class MusicContextIntegration:
         builder: MusicContextBuilder,
         cache: CacheManager | None = None,
         timeout: float = 6.0,
-        logger: logging.Logger | None = None,
+        logger: Any | None = None,
         max_context_chars: int = MAX_CONTEXT_CHARS,
         debug_mode: bool = True,
         observer: Callable[[AstrMessageEvent, MusicContext], None] | None = None,
@@ -86,7 +87,7 @@ class MusicContextIntegration:
         self.builder = builder
         self.cache = cache
         self.timeout = timeout
-        self.logger = logger if logger is not None else logging.getLogger("astrbot")
+        self.logger = logger if logger is not None else astrbot_logger
         if type(max_context_chars) is not int or max_context_chars <= len(
             MUSIC_CONTEXT_PREFIX
         ):
@@ -114,7 +115,7 @@ class MusicContextIntegration:
         if not self.enable_context_injection:
             return
         try:
-            link = self.parser.parse(event)
+            link = await asyncio.to_thread(self.parser.parse, event)
             candidate = self._candidate(event, link)
             event.set_extra(_LINK_KEY, link)
             event.set_extra(_CANDIDATE_KEY, candidate)
@@ -172,7 +173,7 @@ class MusicContextIntegration:
                 return
             link = event.get_extra(_LINK_KEY)
             if link is None:
-                link = self.parser.parse(event)
+                link = await asyncio.to_thread(self.parser.parse, event)
             if not isinstance(link, MusicLinkResult):
                 self._report_unmatched(event)
                 return

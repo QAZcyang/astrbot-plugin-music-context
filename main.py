@@ -1,10 +1,10 @@
 """AstrBot loader entry; lifecycle handlers delegate to the integration layer."""
 
 import asyncio
-import logging
 from collections.abc import Mapping
 from dataclasses import asdict
 
+from astrbot.api import logger
 from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.provider import LLMResponse, ProviderRequest
 from astrbot.api.star import Context, Star, StarTools
@@ -37,7 +37,7 @@ class MusicContextPlugin(Star):
         try:
             self.settings = PluginConfig.from_mapping(config)
         except ValueError:
-            logging.getLogger("astrbot").warning(
+            logger.warning(
                 "Invalid Music Context configuration; music processing disabled"
             )
             self.settings = PluginConfig(
@@ -52,7 +52,7 @@ class MusicContextPlugin(Star):
                 StarTools.get_data_dir("astrbot_plugin_music_context") / "cache"
             )
         except Exception as exc:  # noqa: BLE001 - cache storage must not prevent loading
-            logging.getLogger("astrbot").warning(
+            logger.warning(
                 "Music cache directory unavailable (%s)", type(exc).__name__
             )
             cache_directory = None
@@ -97,10 +97,10 @@ class MusicContextPlugin(Star):
         except Exception as exc:  # noqa: BLE001 - optional management must not prevent chat
             self._dashboard.unregister(context)
             self._webui_available = False
-            logging.getLogger("astrbot").warning(
+            logger.warning(
                 "Music dashboard unavailable (%s)", type(exc).__name__
             )
-        logging.getLogger("astrbot").info(
+        logger.info(
             "Music Context initialized (cache=%s, dashboard=%s)",
             self._integration.cache is not None,
             self._webui_available,
@@ -150,7 +150,7 @@ class MusicContextPlugin(Star):
             async with asyncio.timeout(1.0):
                 await asyncio.to_thread(self._management.persist)
         except Exception as exc:  # noqa: BLE001 - optional history cannot interrupt chat
-            logging.getLogger("astrbot").warning(
+            logger.warning(
                 "Music history persistence failed (%s)", type(exc).__name__
             )
 
@@ -186,7 +186,7 @@ class MusicContextPlugin(Star):
             )
             await self._persist_history()
         except Exception as exc:  # noqa: BLE001 - observation must not break chat
-            logging.getLogger("astrbot").warning(
+            logger.warning(
                 "Music response observation failed (%s)", type(exc).__name__
             )
 

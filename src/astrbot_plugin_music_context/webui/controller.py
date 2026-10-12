@@ -1,8 +1,9 @@
 """Authenticated AstrBot bridge handlers; no separate server or credentials."""
 
 import asyncio
-import logging
 from collections.abc import Callable
+
+from astrbot.api import logger
 
 from ..config_service import ConfigConflictError
 from .service import DashboardService
@@ -72,7 +73,7 @@ class DashboardController:
                 "Management operation timed out", status_code=504
             )
         except Exception as exc:  # noqa: BLE001 - sanitize management errors
-            logging.getLogger("astrbot").warning(
+            logger.warning(
                 "Music management failed (%s)", type(exc).__name__
             )
             return self.error_response("Management operation failed", status_code=500)

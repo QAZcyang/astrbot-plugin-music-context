@@ -2,10 +2,11 @@
 
 import asyncio
 import json
-import logging
 import time
 from dataclasses import replace
 from datetime import UTC, datetime
+
+from astrbot.api import logger
 
 from ..config import PluginConfig
 from ..lyrics import clean_lyrics
@@ -96,7 +97,7 @@ class ContextProcessor:
         if self._lock.locked():
             if diagnostics is not None:
                 diagnostics.update(status="busy", model=self.config.processor_model)
-            logging.getLogger("astrbot").warning("Music processor skipped (busy)")
+            logger.warning("Music processor skipped (busy)")
             return context
         async with self._lock:
             started = time.monotonic()
@@ -203,7 +204,7 @@ class ContextProcessor:
             finally:
                 status["latency_ms"] = round((time.monotonic() - started) * 1000)
                 self.last_status = dict(status)
-            logging.getLogger("astrbot").warning(
+            logger.warning(
                 "Music processor skipped (%s)", status.get("error", "cancelled")
             )
             return context

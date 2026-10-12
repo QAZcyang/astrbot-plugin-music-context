@@ -1,8 +1,9 @@
 """Non-expiring observation snapshots in the existing plugin data directory."""
 
 import json
-import logging
 from pathlib import Path
+
+from astrbot.api import logger
 
 from .files import atomic_write
 
@@ -13,7 +14,7 @@ class HistoryStore:
     # 仍保留请求/回复关联。记录投影与数量限制归 ManagementState，不归音乐缓存。
     def __init__(self, directory: str | Path):
         self.path = Path(directory) / "history.json"
-        self.logger = logging.getLogger(__name__)
+        self.logger = logger
         self.available = False
         self.read_failed = False
 

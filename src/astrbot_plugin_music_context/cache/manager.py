@@ -1,14 +1,15 @@
 """Bounded JSON snapshots with TTL, atomic replacement, and typed recovery."""
 
 import json
-import logging
 import math
 import threading
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import TypeVar, cast, get_args, get_type_hints
+from typing import Any, TypeVar, cast, get_args, get_type_hints
+
+from astrbot.api import logger as astrbot_logger
 
 from ..models import MusicContext, MusicLyrics, MusicTrack
 from ..models.context import ProcessorMetadata
@@ -187,7 +188,7 @@ class CacheManager:
         max_entries: int = 256,
         max_file_bytes: int = 8 * 1024 * 1024,
         clock: Callable[[], float] = time.time,
-        logger: logging.Logger | None = None,
+        logger: Any | None = None,
     ) -> None:
         duration = _duration(ttl)
         if type(max_entries) is not int or max_entries <= 0:
@@ -199,7 +200,7 @@ class CacheManager:
         self.max_entries = max_entries
         self.max_file_bytes = max_file_bytes
         self.clock = clock
-        self.logger = logger if logger is not None else logging.getLogger(__name__)
+        self.logger = logger if logger is not None else astrbot_logger
         self._lock = threading.RLock()
 
     def get_context(

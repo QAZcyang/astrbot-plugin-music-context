@@ -2,11 +2,13 @@
 
 import importlib
 import inspect
-import logging
 import pkgutil
 import re
 from collections.abc import Mapping
 from dataclasses import replace
+from typing import Any
+
+from astrbot.api import logger as astrbot_logger
 
 from ..models import MusicLyrics, MusicTrack
 from ..parser import MusicLinkResult
@@ -18,7 +20,6 @@ from .errors import (
     ProviderExecutionError,
     ProviderRoutingError,
 )
-
 
 class _LegacyProvider(MusicProvider):
     """Adapt the existing integration providers mapping to the new lifecycle."""
@@ -51,11 +52,11 @@ class ProviderRegistry:
     Construct/register providers before serving concurrent requests.
     """
 
-    def __init__(self, *, logger: logging.Logger | None = None) -> None:
+    def __init__(self, *, logger: Any | None = None) -> None:
         self._providers: dict[str, MusicProvider] = {}
         self._priorities: dict[str, int] = {}
         self._capabilities: dict[str, ProviderCapability] = {}
-        self.logger = logger if logger is not None else logging.getLogger("astrbot")
+        self.logger = logger if logger is not None else astrbot_logger
 
     def register(
         self,

@@ -2,7 +2,6 @@
 
 import http.client
 import ipaddress
-import logging
 import math
 import queue
 import re
@@ -13,6 +12,9 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import parse_qs, urljoin, urlsplit, urlunsplit
+from typing import Any
+
+from astrbot.api import logger as astrbot_logger
 
 _HOSTS = {"163cn.tv", "music.163.com"}
 _REDIRECTS = {301, 302}
@@ -149,7 +151,7 @@ class ShortLinkResolver:
         request_headers: HeaderRequester | None = None,
         timeout: float = 3.0,
         max_redirects: int = 5,
-        logger: logging.Logger | None = None,
+        logger: Any | None = None,
     ) -> None:
         if (
             isinstance(timeout, bool)
@@ -165,7 +167,7 @@ class ShortLinkResolver:
         self._request_headers = (
             request_headers if request_headers is not None else _request_headers
         )
-        self.logger = logger if logger is not None else logging.getLogger(__name__)
+        self.logger = logger if logger is not None else astrbot_logger
 
     @staticmethod
     def supports(url: str) -> bool:
