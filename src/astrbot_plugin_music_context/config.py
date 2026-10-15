@@ -7,6 +7,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from astrbot.api import logger
+
 _SCHEMA = json.loads(
     (Path(__file__).resolve().parents[2] / "_conf_schema.json").read_text(
         encoding="utf-8"
@@ -33,6 +35,14 @@ def validate_fields(values: Mapping, schema: dict, *, strict: bool = False) -> d
     result = schema_defaults(schema)
     for name, item in schema.items():
         value = values.get(name, result[name])
+        # M-046: tolerate an invalid mode without disabling all music handling.
+        if name == "lyrics_mode" and value not in ("bilingual", "original"):
+            logger.warning("Invalid lyrics mode; using bilingual")
+            value = item["default"]
+        if name in ("original_lyrics_chars", "translation_extra_chars") and not strict:
+            if type(value) is not int or not item["minimum"] <= value <= item["maximum"]:
+                logger.warning("Invalid lyrics budget; using default")
+                value = item["default"]
         kind = item["type"]
         if kind == "object":
             result[name] = validate_fields(value, item["items"], strict=strict)
@@ -67,6 +77,9 @@ class ProcessorConfig:
 
 @dataclass(frozen=True, slots=True)
 class PluginConfig:
+    lyrics_mode: str = _DEFAULT["lyrics_mode"]
+    original_lyrics_chars: int = _DEFAULT["original_lyrics_chars"]
+    translation_extra_chars: int = _DEFAULT["translation_extra_chars"]
     enable_cache: bool = _DEFAULT["enable_cache"]
     cache_ttl: int = _DEFAULT["cache_ttl"]
     max_cache_items: int = _DEFAULT["max_cache_items"]

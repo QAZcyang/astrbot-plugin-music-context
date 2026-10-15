@@ -43,7 +43,10 @@ def create_integration(
         ),
         registry=registry,
         builder=MusicContextBuilder(
-            max_context_chars=settings.max_context_length - len(MUSIC_CONTEXT_PREFIX)
+            max_context_chars=settings.max_context_length - len(MUSIC_CONTEXT_PREFIX),
+            lyrics_mode=settings.lyrics_mode,
+            original_lyrics_chars=settings.original_lyrics_chars,
+            translation_extra_chars=settings.translation_extra_chars,
         ),
         cache=(
             cache_manager

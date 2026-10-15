@@ -4,15 +4,16 @@ import json
 import math
 import threading
 import time
+import uuid
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, TypeVar, cast, get_args, get_type_hints
 
 from astrbot.api import logger as astrbot_logger
 
 from ..models import MusicContext, MusicLyrics, MusicTrack
-from ..models.context import ProcessorMetadata
+from ..models.context import LyricsPresentation, ProcessorMetadata
 from .files import atomic_write
 
 DEFAULT_TTL = 7 * 24 * 60 * 60
@@ -56,6 +57,20 @@ def _decode(model: type[Model], payload: object, *, generated: bool = False) -> 
             get_type_hints(MusicContext)
         ):
             raise ValueError("Invalid context fields")
+        presentation = payload.get("lyrics_presentation", {})
+        defaults_p = asdict(LyricsPresentation())
+        if not isinstance(presentation, dict) or set(presentation) - set(defaults_p):
+            raise ValueError("Invalid lyrics presentation")
+        presentation = {**defaults_p, **presentation}
+        if (presentation["requested_mode"] not in ("unknown", "original", "bilingual")
+            or presentation["effective_mode"] not in ("unknown", "original", "bilingual")
+            or type(presentation["original_truncated"]) is not bool
+            or type(presentation["translation_truncated"]) is not bool
+            or presentation["translation_source"] not in (None, "netease")
+            or presentation["fallback_reason"] not in (None, "translation_missing", "translation_unusable",
+                "translation_language_unconfirmed", "translation_budget", "original_missing", "instrumental", "context_budget")):
+            raise ValueError("Invalid lyrics presentation values")
+        presentation = LyricsPresentation(**presentation)
         # Generated variants are opt-in; legacy factual entries keep their contract.
         raw = payload.get("original_lyrics")
         if raw is not None and not isinstance(raw, str):
@@ -102,6 +117,7 @@ def _decode(model: type[Model], payload: object, *, generated: bool = False) -> 
                 track=_decode(MusicTrack, payload["track"]),
                 lyrics=_decode(MusicLyrics, payload["lyrics"]),
                 original_lyrics=raw, summary=payload["summary"],
+                lyrics_presentation=presentation,
                 artist_info=payload["artist_info"], **tags,
                 processor_metadata=ProcessorMetadata(**metadata),
             ))
@@ -129,9 +145,16 @@ def _decode(model: type[Model], payload: object, *, generated: bool = False) -> 
                 track=_decode(MusicTrack, payload["track"]),
                 lyrics=_decode(MusicLyrics, payload["lyrics"]),
                 original_lyrics=raw,
+                lyrics_presentation=presentation,
             ),
         )
     hints = _FIELDS[model]
+    if model is MusicLyrics:
+        # Only known optional omissions are upgraded. Keep the envelope's raw
+        # shape until refresh so missing translation differs from explicit null.
+        if "original" not in payload or set(payload) - set(hints):
+            raise ValueError("Invalid legacy lyrics fields")
+        payload = {**asdict(MusicLyrics()), **payload}
     if set(payload) != set(hints):
         raise ValueError("Invalid model fields")
     for name, annotation in hints.items():
@@ -295,6 +318,64 @@ class CacheManager:
             saved = self._write(model, entries)
             if saved and model is not MusicContext:
                 # 原始歌曲/歌词写入后，同一身份的事实和生成 Context 都失效，避免解释旧数据。
+                self._invalidate_contexts(platform, track_id, now)
+            return saved
+
+    def claim_translation_refresh(self, platform: str, track_id: str) -> str | None:
+        """Persist a bounded lease before I/O; explicit empty translations are known.
+
+        At most three attempts per existing raw-entry lifetime, 300 seconds apart.
+        Failed writes do not grant a lease. No TTL renewal or original mutation.
+        """
+        if platform != "netease":
+            return None
+        with self._lock:
+            now = self.clock()
+            entries = self._load(MusicLyrics, now)
+            entry = entries.get(_key(platform, track_id))
+            if not entry or "translation" in entry["value"]:
+                return None
+            old = _decode(MusicLyrics, entry["value"])
+            if old.is_instrumental or not old.original:
+                return None
+            state = entry.get("translation_refresh", {})
+            if not isinstance(state, dict):
+                return None
+            attempts, retry_at = state.get("attempts", 0), state.get("retry_at", 0)
+            if (type(attempts) is not int or not 0 <= attempts < 3
+                or type(retry_at) not in (int, float) or not math.isfinite(retry_at)
+                or now < retry_at):
+                return None
+            ticket = uuid.uuid4().hex
+            entry["translation_refresh"] = {"attempts": attempts + 1,
+                "retry_at": min(now + 300, entry["expires_at"]), "ticket": ticket}
+            return ticket if self._write(MusicLyrics, entries) else None
+
+    def complete_translation_refresh(
+        self, platform: str, track_id: str, ticket: str, fetched: MusicLyrics,
+    ) -> bool:
+        """Merge only into the leased legacy entry; preserve its original and TTL."""
+        if platform != "netease" or fetched.source != "netease":
+            return False
+        try:
+            _decode(MusicLyrics, asdict(fetched))
+        except (ValueError, TypeError):
+            return False
+        with self._lock:
+            now = self.clock()
+            entries = self._load(MusicLyrics, now)
+            entry = entries.get(_key(platform, track_id))
+            if (not entry or entry.get("translation_refresh", {}).get("ticket") != ticket
+                or "translation" in entry["value"]):
+                return False
+            old = _decode(MusicLyrics, entry["value"])
+            merged = replace(old, translation=fetched.translation,
+                             translation_language=fetched.translation_language,
+                             source=old.source or fetched.source)
+            entry["value"] = asdict(merged)
+            entry.pop("translation_refresh", None)
+            saved = self._write(MusicLyrics, entries)
+            if saved:
                 self._invalidate_contexts(platform, track_id, now)
             return saved
 

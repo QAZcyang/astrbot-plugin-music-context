@@ -1,6 +1,6 @@
 # 听懂这首歌 (Music Context)
 
-**版本：v1.0.2 正式版**
+**版本：v1.1.0 正式版**
 
 听懂这首歌 (Music Context) 是 AstrBot 音乐上下文插件。解析音乐分享内容，获取歌曲信息与歌词，让 AI 理解并参与关于歌曲的交流。
 
@@ -50,11 +50,11 @@
 https://github.com/QAZcyang/astrbot-plugin-music-context
 ```
 
-此方式使用仓库默认分支。需要固定 v1.0.2 时使用下面的 Release 安装或指定 Tag 的手动安装。入口名称以宿主版本为准，参见 [AstrBot 插件安装指南](https://docs.astrbot.app/use/plugin.html)。
+此方式使用仓库默认分支。需要固定 v1.1.0 时使用下面的 Release 安装或指定 Tag 的手动安装。入口名称以宿主版本为准，参见 [AstrBot 插件安装指南](https://docs.astrbot.app/use/plugin.html)。
 
 ### Release 安装
 
-从 [Releases](https://github.com/QAZcyang/astrbot-plugin-music-context/releases) 选择 **v1.0.2**，阅读版本说明并下载 `astrbot_plugin_music_context-v1.0.2.zip`，通过 AstrBot「从文件安装」加载。也可下载对应源码归档，解压后按手动方式安装完整插件根目录。升级前备份原插件、原生配置与插件数据目录。
+从 [Releases](https://github.com/QAZcyang/astrbot-plugin-music-context/releases) 选择 **v1.1.0**，阅读版本说明并下载 `astrbot_plugin_music_context-v1.1.0.zip`，通过 AstrBot「从文件安装」加载。也可下载对应源码归档，解压后按手动方式安装完整插件根目录。升级前备份原插件、原生配置与插件数据目录。
 
 ### 手动安装
 
@@ -68,7 +68,7 @@ git clone --depth 1 https://github.com/QAZcyang/astrbot-plugin-music-context.git
 
 安装后在 AstrBot 中加载/重载并检查日志，在目标会话的插件列表中启用听懂这首歌 (Music Context)。正常分享支持的单曲链接，并确保会话会触发 LLM 请求；无需音乐命令。管理页入口为插件详情的 **Pages/页面 → dashboard**。更多使用边界见[使用与开发指南](USER_GUIDE.md)。
 
-确认 Dashboard 显示 `v1.0.2`，分享网易云单曲链接后查看新增 Music Context；有音乐关联的模型回调时可查看 LLM 回复。记录表示 Hook 观察，最终消息送达仍以客户端为准。版本内容与限制见 [v1.0.2 Release 说明](https://github.com/QAZcyang/astrbot-plugin-music-context/releases/tag/v1.0.2)。
+确认 Dashboard 显示 `v1.1.0`，分享网易云单曲链接后查看新增 Music Context；有音乐关联的模型回调时可查看 LLM 回复。记录表示 Hook 观察，最终消息送达仍以客户端为准。版本内容与限制见 [v1.1.0 Release 说明](https://github.com/QAZcyang/astrbot-plugin-music-context/releases/tag/v1.1.0)。
 
 ## 配置说明
 
@@ -182,3 +182,9 @@ QQ 聊天中的网易云分享卡片不等于 QQ 音乐数据源支持。卡片�
 见根目录 **[NOTICE.md](NOTICE.md)**。Dashboard 图标保留 Lucide ISC 与适用的 Feather MIT notices，随包保留[图标来源说明](pages/dashboard/assets/icons/NOTICE.md)和[完整上游许可证](pages/dashboard/assets/icons/LICENSE.txt)。
 
 详细记录：[来源清单](docs/REFERENCE.md)、[API 清单](docs/REFERENCE.md)、[依赖审查](docs/REFERENCE.md)。发行材料范围见[发行内容政策](docs/REFERENCE.md)，更多文档见 [docs/](docs/)。
+
+## v1.1.0 歌词模式
+
+`lyrics_mode` 默认为 `bilingual`，可选 `original`。双语模式仅使用网易云提供并通过中文校验的译文，无可用译文时降级原文。`original_lyrics_chars=6000`、`translation_extra_chars=2000` 分别限制原文与译文；`max_context_length=8000` 是包括提示和结构的硬性总上限，原文优先。截断与降级状态进入 Context。配置可通过原生配置或 WebUI 编辑。旧配置自动采用新默认值，无需清空缓存。
+
+中文识别较保守，简短、意象型、文言及部分繁体译文可能被拒绝；长原文可能压缩译文空间。详情见 [版本说明](docs/release_notes_v1.1.0.md)。

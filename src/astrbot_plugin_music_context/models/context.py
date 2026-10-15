@@ -19,6 +19,18 @@ class ProcessorMetadata:
 
 
 @dataclass(frozen=True, slots=True)
+class LyricsPresentation:
+    """Derived request facts; unknown defaults preserve historical observations."""
+
+    requested_mode: str = "unknown"
+    effective_mode: str = "unknown"
+    fallback_reason: str | None = None
+    original_truncated: bool = False
+    translation_truncated: bool = False
+    translation_source: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
 class MusicContext:
     """Music evidence plus optional text-derived hypotheses, never user judgments."""
 
@@ -36,16 +48,18 @@ class MusicContext:
     processor_metadata: ProcessorMetadata = field(default_factory=ProcessorMetadata)
 
     artist_info: str | None = None
+    lyrics_presentation: LyricsPresentation = field(default_factory=LyricsPresentation)
 
     def payload(self) -> dict:
         """LLM projection: omit duplicate raw lyrics and absent enhancements."""
         value = asdict(self)
         value.pop("original_lyrics")
         if not self.processor_metadata.enabled:
-            return {key: value[key] for key in ("track", "lyrics")}
+            return {key: value[key] for key in ("track", "lyrics", "lyrics_presentation")}
         return {
             "track": value["track"],
             "lyrics": value["lyrics"],
+            "lyrics_presentation": value["lyrics_presentation"],
             "song_summary": self.summary,
             "artist_info": self.artist_info,
             "style": value["style_tags"],

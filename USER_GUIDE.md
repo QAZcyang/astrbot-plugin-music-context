@@ -1,6 +1,6 @@
 # Music Context 使用与开发指南
 
-Music Context v1.0.2 支持网易云单曲链接、App 短链及已知 JSON/XML 音乐卡片。QQ Music 与其他音乐数据源只有扩展接口，尚未实现。
+Music Context v1.1.0 支持网易云单曲链接、App 短链及已知 JSON/XML 音乐卡片。QQ Music 与其他音乐数据源只有扩展接口，尚未实现。
 
 ## 宿主与消息边界
 
@@ -66,3 +66,9 @@ provider = registry.get("netease")
 ```
 
 资源/输入能力过滤先于优先级选择；请求失败不会自动切换另一个 Provider。Registry 的类型校验不代替新 Provider 的身份校验，新卡片布局与短链域名也需单独验证。完整实现见 `src/astrbot_plugin_music_context/providers/`。
+
+## v1.1.0 歌词模式
+
+`lyrics_mode` 默认为 `bilingual`，可选 `original`。双语模式仅使用网易云提供并通过中文校验的译文，无可用译文时降级原文。`original_lyrics_chars=6000`、`translation_extra_chars=2000` 分别限制原文与译文；`max_context_length=8000` 是包括提示和结构的硬性总上限，原文优先。截断与降级状态进入 Context。配置可通过原生配置或 WebUI 编辑。旧配置自动采用新默认值，无需清空缓存。
+
+中文识别较保守，简短、意象型、文言及部分繁体译文可能被拒绝；长原文可能压缩译文空间。详情见 [版本说明](docs/release_notes_v1.1.0.md)。

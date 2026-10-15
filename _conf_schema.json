@@ -126,5 +126,31 @@
         "maximum": 60
       }
     }
+  },
+  "lyrics_mode": {
+    "type": "string",
+    "default": "bilingual",
+    "options": [
+      "bilingual",
+      "original"
+    ],
+    "description": "歌词注入模式",
+    "hint": "双语优先：仅加入通过保守中文规则的网易云译文，否则使用原文。original 仅原文，不限制主模型回复语言。非法值回退 bilingual。"
+  },
+  "original_lyrics_chars": {
+    "type": "int",
+    "default": 6000,
+    "minimum": 1,
+    "maximum": 32000,
+    "description": "原文歌词字符预算",
+    "hint": "默认 6000 字符；先保留原文完整行，再分配译文。仍受 Music Context 总字符上限（包含提示前缀）限制。"
+  },
+  "translation_extra_chars": {
+    "type": "int",
+    "default": 2000,
+    "minimum": 0,
+    "maximum": 16000,
+    "description": "中文译文额外字符预算",
+    "hint": "默认 2000 字符；仅双语生效，0 表示不分配译文。不会提高 max_context_length；原文优先，空间不足时截断或降级。"
   }
 }
