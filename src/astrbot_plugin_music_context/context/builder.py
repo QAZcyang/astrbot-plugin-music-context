@@ -64,7 +64,7 @@ class MusicContextBuilder:
 
     @property
     def policy(self) -> str:
-        return f"m046-v1:{self.lyrics_mode}:{self.original_lyrics_chars}:{self.translation_extra_chars}"
+        return f"v111-budget-v2:{self.lyrics_mode}:{self.original_lyrics_chars}:{self.translation_extra_chars}"
 
     def build(
         self, track: MusicTrack | None, lyrics: MusicLyrics | None = None,
@@ -102,10 +102,22 @@ class MusicContextBuilder:
             return result if len(self.to_json(result)) <= self.max_context_chars else None
         bounded = clean_lyrics(original, max_chars=self.original_lyrics_chars).text
         fitted_original = _fit_text(bounded, remaining)
-        if fitted_original is not None:
-            remaining -= len(_json(fitted_original)) - len("null")
         bounded_translation = clean_lyrics(translation, max_chars=self.translation_extra_chars).text
-        fitted_translation = _fit_text(bounded_translation, remaining) if fitted_original else None
+        fitted_translation = None
+        if fitted_original and bounded_translation:
+            # 原文分配仍使用两种模式相同的保守预算。译文确定可用后，
+            # 不再预留不可能同时出现的“语言不确定”原因，按实际双语结构计费。
+            # false 比 true 多一个字符，先为未截断状态留足空间。
+            translation_base = replace(
+                empty,
+                lyrics=replace(raw, original=fitted_original, translation=None,
+                               translation_language="zh"),
+                lyrics_presentation=LyricsPresentation(
+                    self.lyrics_mode, "bilingual", None,
+                    bool(original and fitted_original != original), False, "netease"),
+            )
+            available = self.max_context_chars - len(self.to_json(translation_base))
+            fitted_translation = _fit_text(bounded_translation, available)
         if translation and not fitted_translation:
             reason = "translation_budget"
         presentation = LyricsPresentation(

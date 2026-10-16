@@ -349,6 +349,10 @@ class CacheManager:
             ticket = uuid.uuid4().hex
             entry["translation_refresh"] = {"attempts": attempts + 1,
                 "retry_at": min(now + 300, entry["expires_at"]), "ticket": ticket}
+            # 补取是可选操作；不能为存放租约而让通用容量淘汰删除原歌词。
+            # 检查编码后的字节数，超限不写盘也不授权网络请求。
+            if len(self._encode(entries)) > self.max_file_bytes:
+                return None
             return ticket if self._write(MusicLyrics, entries) else None
 
     def complete_translation_refresh(
